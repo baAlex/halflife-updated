@@ -1,5 +1,7 @@
 // view/refresh setup functions
 
+#include "ic/view.hpp"
+
 #include "hud.h"
 #include "cl_util.h"
 #include "cvardef.h"
@@ -1243,6 +1245,11 @@ void V_GetDirectedChasePosition(cl_entity_t* ent1, cl_entity_t* ent2, float* ang
 
 void V_GetChasePos(int target, float* cl_angles, float* origin, float* angles)
 {
+	if (1)
+	{
+		return Ic::ViewGetChasePosition(target, cl_angles, origin, angles);
+	}
+
 	cl_entity_t* ent = NULL;
 
 	if (0 != target)
@@ -1628,6 +1635,11 @@ void V_CalcSpectatorRefdef(struct ref_params_s* pparams)
 
 void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 {
+	if (1)
+	{
+		return Ic::ViewUpdate(pparams);
+	}
+
 	//	RecClCalcRefdef(pparams);
 
 	// intermission / finale rendering
@@ -1689,6 +1701,11 @@ Client side punch effect
 */
 void V_PunchAxis(int axis, float punch)
 {
+	if (1)
+	{
+		return Ic::ViewApplyPunch(axis, punch);
+	}
+
 	ev_punchangle[axis] = punch;
 }
 
@@ -1699,6 +1716,11 @@ V_Init
 */
 void V_Init()
 {
+	if (1)
+	{
+		return Ic::ViewInitialize();
+	}
+
 	gEngfuncs.pfnAddCommand("centerview", V_StartPitchDrift);
 
 	scr_ofsx = gEngfuncs.pfnRegisterVariable("scr_ofsx", "0", 0);

@@ -32,6 +32,7 @@ HL1_OBJS = \
 	$(HL1_OBJ_DIR)/hl/hl_events.o \
 	$(HL1_OBJ_DIR)/hl/hl_objects.o \
 	$(HL1_OBJ_DIR)/hl/hl_weapons.o \
+	$(HL1_OBJ_DIR)/ic/view.o \
 	$(HL1_OBJ_DIR)/hud.o \
 	$(HL1_OBJ_DIR)/inputw32.o \
 	$(HL1_OBJ_DIR)/ammo.o \
@@ -135,6 +136,7 @@ $(HL1_OBJ_DIR):
 	mkdir -p $(HL1_OBJ_DIR)
 	mkdir -p $(HL1_PARTICLEMAN_OBJ_DIR)
 	mkdir -p $(HL1_OBJ_DIR)/hl
+	mkdir -p $(HL1_OBJ_DIR)/ic
 	mkdir -p $(HL1_OBJ_DIR)/dlls/wpn_shared
 	mkdir -p $(HL1_OBJ_DIR)/VGUI
 
@@ -164,6 +166,9 @@ $(HL1_SERVER_OBJ_DIR)/%.o: $(HL_SERVER_SRC_DIR)/%.cpp $(filter-out $(wildcard  $
 	$(DO_CC)
 
 $(HL1_OBJ_DIR)/%.o: $(HL_SRC_DIR)/hl/%.cpp $(filter-out $(wildcard  $(HL1_OBJ_DIR)),  $(HL1_OBJ_DIR))
+	$(DO_CC)
+
+$(HL1_OBJ_DIR)/%.o: $(HL_SRC_DIR)/ic/%.cpp $(filter-out $(wildcard  $(HL1_OBJ_DIR)),  $(HL1_OBJ_DIR))
 	$(DO_CC)
 
 $(HL1_OBJ_DIR)/%.o: $(HL_SRC_DIR)/dlls/wpn_shared/%.cpp $(filter-out $(wildcard  $(HL1_OBJ_DIR)),  $(HL1_OBJ_DIR))
