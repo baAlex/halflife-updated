@@ -107,6 +107,7 @@ PUBLIC_OBJS = \
 	$(PUBLIC_OBJ_DIR)/interface.o \
 
 COMMON_OBJS = \
+	$(COMMON_OBJ_DIR)/ic/core.o \
 	$(COMMON_OBJ_DIR)/mathlib.o \
 	$(COMMON_OBJ_DIR)/parsemsg.o \
 
@@ -149,6 +150,7 @@ $(PUBLIC_OBJ_DIR):
 
 $(COMMON_OBJ_DIR):
 	mkdir -p $(COMMON_OBJ_DIR)
+	mkdir -p $(COMMON_OBJ_DIR)/ic
 
 $(GAME_SHARED_OBJ_DIR):
 	mkdir -p $(GAME_SHARED_OBJ_DIR)
@@ -181,6 +183,9 @@ $(PUBLIC_OBJ_DIR)/%.o : $(PUBLIC_SRC_DIR)/%.cpp $(filter-out $(wildcard  $(PUBLI
 	$(DO_CC)
 
 $(COMMON_OBJ_DIR)/%.o : $(COMMON_SRC_DIR)/%.cpp $(filter-out $(wildcard  $(COMMON_OBJ_DIR)),  $(COMMON_OBJ_DIR))
+	$(DO_CC)
+
+$(COMMON_OBJ_DIR)/%.o : $(COMMON_SRC_DIR)/ic/%.cpp $(filter-out $(wildcard  $(COMMON_OBJ_DIR)),  $(COMMON_OBJ_DIR))
 	$(DO_CC)
 
 $(GAME_SHARED_OBJ_DIR)/%.o : $(GAME_SHARED_SRC_DIR)/%.cpp $(filter-out $(wildcard  $(GAME_SHARED_OBJ_DIR)),  $(GAME_SHARED_OBJ_DIR))

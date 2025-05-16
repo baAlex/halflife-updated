@@ -1,0 +1,67 @@
+/*
+
+Copyright (c) 2025 Alexander Brandt
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+This Source Code Form is "Incompatible With Secondary Licenses", as
+defined by the Mozilla Public License, v. 2.0.
+*/
+
+#include "base.hpp"
+#include <math.h>
+
+
+float Ic::Min(float a, float b)
+{
+	return (a < b) ? a : b;
+}
+
+float Ic::Max(float a, float b)
+{
+	return (a > b) ? a : b;
+}
+
+float Ic::Clamp(float x, float min, float max)
+{
+	return Min(Max(x, min), max);
+}
+
+float Ic::Mix(float a, float b, float f)
+{
+	return a + (b - a) * f;
+}
+
+float Ic::FmodFloored(float x, float y)
+{
+	return x - static_cast<float>(floorf(x / y)) * y;
+}
+
+float Ic::AnglesDifference(float a, float b)
+{
+	return FmodFloored(b - a + 180.0f, 360.0f) - 180.0f;
+}
+
+float Ic::AnglesMix(float a, float b, float f)
+{
+	return a + AnglesDifference(a, b) * f;
+}
+
+float Ic::AnglesHolmerMix(float a, float b, float d, float dt)
+{
+	return AnglesMix(a, b, static_cast<float>(expf(-d * dt)));
+}
+
+float Ic::HolmerMix(float a, float b, float d, float dt)
+{
+	// Freya Holmér. Lerp smoothing is broken. 2024.
+	// https://www.youtube.com/watch?v=LSNQuFEDOyQ
+	return Mix(a, b, static_cast<float>(expf(-d * dt)));
+}
+
+float Ic::ClampAroundCentre(float x, float centre, float range)
+{
+	return centre + Max(-range, Min(x - centre, range));
+}
