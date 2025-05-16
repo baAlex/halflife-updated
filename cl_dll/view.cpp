@@ -1,7 +1,5 @@
 // view/refresh setup functions
 
-#include "ic/view.hpp"
-
 #include "hud.h"
 #include "cl_util.h"
 #include "cvardef.h"
@@ -21,6 +19,8 @@
 #include "shake.h"
 #include "hltv.h"
 #include "Exports.h"
+
+#include "ic/view.hpp"
 
 int CL_IsThirdPerson();
 void CL_CameraOffset(float* ofs);

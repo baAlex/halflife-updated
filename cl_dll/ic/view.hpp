@@ -13,7 +13,30 @@
  *
  ****/
 
-#include "ref_params.h" // ref_params_s
+// THE ORDER OF HEADERS INCLUSION IS THIS AND NO OTHER
+// (copied from original "view.cpp")
+#include "hud.h"
+#include "cl_util.h"
+#include "cvardef.h"
+#include "usercmd.h"
+#include "const.h"
+
+#include "entity_state.h"
+#include "cl_entity.h"
+#include "ref_params.h"
+#include "in_defs.h"
+#include "pm_movevars.h"
+#include "pm_shared.h"
+#include "pm_defs.h"
+#include "event_api.h"
+#include "pmtrace.h"
+#include "screenfade.h"
+#include "shake.h"
+#include "hltv.h"
+#include "Exports.h"
+
+#ifndef IC_VIEW_HPP
+#define IC_VIEW_HPP
 
 namespace Ic
 {
@@ -25,3 +48,5 @@ void ViewApplyPunch(int axis, float punch);
 void ViewGetChasePosition(int target, const float* cl_angles, float* out_origin, float* out_angles);
 
 } // namespace Ic
+
+#endif

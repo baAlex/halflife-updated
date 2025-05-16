@@ -11,7 +11,7 @@ AlignAfterOpenBracket: Align
 MaxEmptyLinesToKeep: 2
 
 PointerAlignment: Left
-SortIncludes: true
+SortIncludes: false
 
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
