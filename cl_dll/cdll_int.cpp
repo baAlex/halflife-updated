@@ -38,6 +38,8 @@
 #include "vgui_TeamFortressViewport.h"
 #include "filesystem_utils.h"
 
+#include "ic/hud.hpp"
+
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 TeamFortressViewport* gViewPort = NULL;
@@ -169,7 +171,12 @@ so the HUD can reinitialize itself.
 int DLLEXPORT HUD_VidInit()
 {
 	//	RecClHudVidInit();
-	gHUD.VidInit();
+	gHUD.VidInit(); // (baAlex) Disable it break things
+
+	if (1)
+	{
+		Ic::HudVideoInitialise();
+	}
 
 	VGui_Startup();
 
@@ -190,8 +197,13 @@ void DLLEXPORT HUD_Init()
 {
 	//	RecClHudInit();
 	InitInput();
-	gHUD.Init();
+	gHUD.Init(); // (baAlex) As above
 	Scheme_Init();
+
+	if (1)
+	{
+		Ic::HudInitialise();
+	}
 }
 
 
@@ -208,7 +220,15 @@ int DLLEXPORT HUD_Redraw(float time, int intermission)
 {
 	//	RecClHudRedraw(time, intermission);
 
-	gHUD.Redraw(time, 0 != intermission);
+	// if (1) // (baAlex) TODO :)
+	{
+		Ic::HudDraw(time);
+	}
+	// else
+	{
+		// (baAlex) Is safe do disable this one
+		gHUD.Redraw(time, 0 != intermission);
+	}
 
 	return 1;
 }
@@ -233,7 +253,11 @@ int DLLEXPORT HUD_UpdateClientData(client_data_t* pcldata, float flTime)
 
 	IN_Commands();
 
-	return static_cast<int>(gHUD.UpdateClientData(pcldata, flTime));
+	// (baAlex) Not safe, in fact, hideous things happens inside here
+	// (like adjusting fov, mouse sensibility and update keys input)
+	static_cast<int>(gHUD.UpdateClientData(pcldata, flTime));
+
+	return 1;
 }
 
 /*
@@ -248,7 +272,12 @@ void DLLEXPORT HUD_Reset()
 {
 	//	RecClHudReset();
 
-	gHUD.VidInit();
+	gHUD.VidInit(); // (baAlex) You get the idea
+
+	if (1)
+	{
+		Ic::HudVideoInitialise();
+	}
 }
 
 /*
