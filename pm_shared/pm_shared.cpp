@@ -1058,6 +1058,7 @@ PM_Accelerate
 */
 void PM_Accelerate(Vector wishdir, float wishspeed, float accel)
 {
+#if 0
 	int i;
 	float addspeed, accelspeed, currentspeed;
 
@@ -1091,6 +1092,45 @@ void PM_Accelerate(Vector wishdir, float wishspeed, float accel)
 	{
 		pmove->velocity[i] += accelspeed * wishdir[i];
 	}
+#else
+	// baAlex:
+
+	// Doom 3 fix (that never got used actually)
+	// by God himself John Carmack
+	// https://github.com/id-Software/DOOM-3/blob/a9c49da5afb18201d31e3f0a429a037e56ce2b9a/neo/d3xp/physics/Physics_Player.cpp#L140
+
+	// Here another fix:
+
+	// "The code behind Quake's movement tricks explained (bunny-hopping, wall-running, and zig-zagging)"
+	// Matt's Ramblings
+	// https://www.youtube.com/watch?v=v3zT3Z5apaM&t=212s
+
+	// (replace above "currentspeed = DotProduct(pmove->velocity, wishdir)" with "currentspeed = Length(pmove->velocity)")
+
+	if (pmove->dead != 0 || pmove->waterjumptime != 0)
+		return;
+
+	Vector wishVelocity;
+	wishVelocity[0] = wishdir[0] * wishspeed;
+	wishVelocity[1] = wishdir[1] * wishspeed;
+	wishVelocity[2] = wishdir[2] * wishspeed;
+
+	Vector pushDir;
+	pushDir[0] = wishVelocity[0] - pmove->velocity[0];
+	pushDir[1] = wishVelocity[1] - pmove->velocity[1];
+	pushDir[2] = wishVelocity[2] - pmove->velocity[2];
+
+	const float pushLen = VectorNormalize(pushDir);
+
+	float canPush = accel * pmove->frametime * wishspeed * pmove->friction;
+	if (canPush > pushLen) {
+		canPush = pushLen;
+	}
+
+	pmove->velocity[0] += canPush * pushDir[0];
+	pmove->velocity[1] += canPush * pushDir[1];
+	pmove->velocity[2] += canPush * pushDir[2];
+#endif
 }
 
 /*

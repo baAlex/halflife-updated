@@ -21,6 +21,7 @@
 #include "vgui_TeamFortressViewport.h"
 #include "filesystem_utils.h"
 
+#include "ic/base.hpp"
 
 extern bool g_iAlive;
 
@@ -657,6 +658,8 @@ void DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s* cmd, int active)
 	Vector viewangles;
 	static Vector oldangles;
 
+	const float max_max_speed = Ic::Max(cl_sidespeed->value, Ic::Max(cl_backspeed->value, cl_forwardspeed->value));
+
 	if (0 != active)
 	{
 		//memset( viewangles, 0, sizeof( Vector ) );
@@ -685,6 +688,21 @@ void DLLEXPORT CL_CreateMove(float frametime, struct usercmd_s* cmd, int active)
 		{
 			cmd->forwardmove += cl_forwardspeed->value * CL_KeyState(&in_forward);
 			cmd->forwardmove -= cl_backspeed->value * CL_KeyState(&in_back);
+		}
+
+		// (baAlex) Clip to a configurable maximum speed,
+		// by that I mean that "sv_maxspeed" cannot be set in a non hacky way,
+		// so this is a sightly better alternative
+		if (max_max_speed != 0.0f)
+		{
+			float fmov = sqrtf((cmd->forwardmove * cmd->forwardmove) + (cmd->sidemove * cmd->sidemove));
+
+			if (fmov > max_max_speed)
+			{
+				float fratio = max_max_speed / fmov;
+				cmd->forwardmove *= fratio;
+				cmd->sidemove *= fratio;
+			}
 		}
 
 		// adjust for speed key
@@ -977,7 +995,7 @@ void InitInput()
 	cl_upspeed = gEngfuncs.pfnRegisterVariable("cl_upspeed", "320", 0);
 	cl_forwardspeed = gEngfuncs.pfnRegisterVariable("cl_forwardspeed", "400", FCVAR_ARCHIVE);
 	cl_backspeed = gEngfuncs.pfnRegisterVariable("cl_backspeed", "400", FCVAR_ARCHIVE);
-	cl_sidespeed = gEngfuncs.pfnRegisterVariable("cl_sidespeed", "400", 0);
+	cl_sidespeed = gEngfuncs.pfnRegisterVariable("cl_sidespeed", "400", FCVAR_ARCHIVE);
 	cl_movespeedkey = gEngfuncs.pfnRegisterVariable("cl_movespeedkey", "0.3", 0);
 	cl_pitchup = gEngfuncs.pfnRegisterVariable("cl_pitchup", "89", 0);
 	cl_pitchdown = gEngfuncs.pfnRegisterVariable("cl_pitchdown", "89", 0);
