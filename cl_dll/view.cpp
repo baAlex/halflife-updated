@@ -1718,7 +1718,7 @@ void V_Init()
 {
 	if (1)
 	{
-		return Ic::ViewInitialize();
+		return Ic::ViewInitialise();
 	}
 
 	gEngfuncs.pfnAddCommand("centerview", V_StartPitchDrift);

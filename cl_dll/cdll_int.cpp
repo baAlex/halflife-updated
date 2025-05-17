@@ -39,6 +39,7 @@
 #include "filesystem_utils.h"
 
 #include "ic/hud.hpp"
+#include "ic/messages.hpp"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -199,6 +200,8 @@ void DLLEXPORT HUD_Init()
 	InitInput();
 	gHUD.Init(); // (baAlex) As above
 	Scheme_Init();
+
+	Ic::MessagesInitialise();
 
 	if (1)
 	{

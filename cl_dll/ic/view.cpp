@@ -13,18 +13,22 @@
  *
  ****/
 
+#include "hud.h"
+#include "cl_util.h"
+#include "in_defs.h"
+#include "cl_dll.h"
+#include "Exports.h"
+
 #include "view.hpp"
 #include "ic/base.hpp"
 
 
-extern int g_iUser1;                     // Defined in "cl_dll/vgui_TeamFortressViewport.cpp"
-extern Vector v_client_aimangles;        // Defined in "cl_dll/view.cpp"
-extern Vector v_origin;                  // Ditto
-extern Vector v_angles;                  // Ditto
-extern Vector v_cl_angles;               // Ditto
-extern Vector v_sim_org;                 // Ditto
-extern int CL_IsThirdPerson();           // Defined in "cl_dll/in_camera.cpp"
-extern void CL_CameraOffset(float* ofs); // Ditto
+extern int g_iUser1;              // Defined in "cl_dll/vgui_TeamFortressViewport.cpp"
+extern Vector v_client_aimangles; // Defined in "cl_dll/view.cpp"
+extern Vector v_origin;           // Ditto
+extern Vector v_angles;           // Ditto
+extern Vector v_cl_angles;        // Ditto
+extern Vector v_sim_org;          // Ditto
 
 
 // Minimal view functions
@@ -38,7 +42,17 @@ extern void CL_CameraOffset(float* ofs); // Ditto
 // keep player head above water waves is needed, nor all the cameras tilts.
 
 
-void Ic::ViewInitialize() {}
+void Ic::ViewInitialise()
+{
+	// «Called whenever the client connects to a server»
+	// Valve (cl_dll/cdll_int.cpp)
+
+	// For some reason we are buried in InitInput():
+	//    Ic::ViewInitialise() <- V_Init() <- InitInput() <- HUD_Init()
+
+	// Btw, HUD_Init() is a misleading name, it seems that at some point Valve named
+	// what is now generally known as "client" code, "Hud" code.
+}
 
 
 static void sIntermissionView(struct ref_params_s* in_out)
@@ -104,12 +118,11 @@ static constexpr float CROUCH_SMOOTH = 3.0f;
 
 #ifdef BOB
 static float s_walk_speed;
-static constexpr float DUCK_MULTIPLY_SPEED = 0.5f;
 static constexpr float SPEED_THRESHOLD = 10.0f;
 static constexpr float WALK_SMOOTH = 5.0f;
 
 static float s_bob[2];
-static constexpr float BOB_AMOUNT[2] = {1.0f * 0.3f, 1.0f * 0.2f};
+static constexpr float BOB_AMOUNT[2] = {1.5f * 0.3f, 1.5f * 0.2f};
 static constexpr float BOB_SPEED[2] = {1.0f * 12.0f, 1.0f * 6.0f};
 #endif
 
@@ -335,6 +348,9 @@ static void sNormalView(struct ref_params_s* in_out)
 
 void Ic::ViewUpdate(struct ref_params_s* in_out)
 {
+	// We are called directly by the engine, every frame:
+	//    Ic::ViewUpdate <- V_CalcRefdef()
+
 	if (in_out->intermission != 0)
 	{
 		sIntermissionView(in_out);
@@ -355,6 +371,7 @@ void Ic::ViewApplyPunch(int axis, float punch)
 	(void)axis;
 	(void)punch;
 	// Is up to us to save inputs and do something with them
+	// TODO, investigate further
 }
 
 void Ic::ViewGetChasePosition(int target, const float* cl_angles, float* out_origin, float* out_angles)

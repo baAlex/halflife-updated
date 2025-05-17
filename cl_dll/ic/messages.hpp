@@ -13,24 +13,16 @@
  *
  ****/
 
-// ORDER OF INCLUDES IS THIS AND NO OTHER
-#include "vector.h"
-#include "Platform.h"
-#include "pm_movevars.h"
-#include "usercmd.h"
-#include "ref_params.h"
-
-#ifndef IC_VIEW_HPP
-#define IC_VIEW_HPP
+#ifndef IC_MESSAGES_HPP
+#define IC_MESSAGES_HPP
 
 namespace Ic
 {
 
-void ViewInitialise();
-void ViewUpdate(struct ref_params_s* input_output);
+void MessagesInitialise();
 
-void ViewApplyPunch(int axis, float punch);
-void ViewGetChasePosition(int target, const float* cl_angles, float* out_origin, float* out_angles);
+int IsPlayerDead();
+int PlayerHealth();
 
 } // namespace Ic
 

@@ -22,6 +22,7 @@
 #include "filesystem_utils.h"
 
 #include "ic/base.hpp"
+#include "ic/messages.hpp"
 
 extern bool g_iAlive;
 
@@ -781,10 +782,12 @@ CL_IsDead
 Returns 1 if health is <= 0
 ============
 */
+#if 0 // (baAlex) Moved to Ic::IsPlayerDead()
 bool CL_IsDead()
 {
 	return gHUD.m_Health.m_iHealth <= 0;
 }
+#endif
 
 /*
 ============
@@ -874,7 +877,7 @@ int CL_ButtonBits(bool bResetState)
 	}
 
 	// Dead or in intermission? Shore scoreboard, too
-	if (CL_IsDead() || gHUD.m_iIntermission)
+	if (Ic::IsPlayerDead() || gHUD.m_iIntermission)
 	{
 		bits |= IN_SCORE;
 	}
