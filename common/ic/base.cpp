@@ -13,6 +13,15 @@ defined by the Mozilla Public License, v. 2.0.
 #include "base.hpp"
 #include <math.h>
 
+float Ic::DegToRad(float deg)
+{
+	return deg * (static_cast<float>(M_PI) / 180.0f);
+}
+
+float Ic::RadToDeg(float rad)
+{
+	return rad * (180.0f / static_cast<float>(M_PI));
+}
 
 float Ic::Min(float a, float b)
 {

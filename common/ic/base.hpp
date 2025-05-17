@@ -16,6 +16,8 @@ defined by the Mozilla Public License, v. 2.0.
 namespace Ic
 {
 
+float DegToRad(float deg);
+float RadToDeg(float rad);
 float Min(float a, float b);
 float Max(float a, float b);
 float Clamp(float x, float min, float max);

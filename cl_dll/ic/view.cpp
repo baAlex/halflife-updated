@@ -74,6 +74,7 @@ static void sIntermissionView(struct ref_params_s* in_out)
 #define SWAY
 #define LEAN
 #define BOB
+#define CROUCH
 #define BREATH
 
 #ifdef SMOOTH_Z
@@ -91,15 +92,20 @@ static constexpr float SWAY_INSIDE_RANGE[2] = {30.0f / 2.0f, 40.0f / 2.0f};
 
 #ifdef LEAN
 static Vector s_lean;
-static constexpr Vector LEAN_AMOUNT = {8.0f, 6.0f, 6.0f};
+static constexpr Vector LEAN_AMOUNT = {8.0f * 0.8f, 6.0f * 0.8f, 6.0f * 0.8f};
 static constexpr float LEAN_SMOOTH = 10.0f;
+#endif
+
+#ifdef CROUCH
+static float s_crouch;
+static constexpr float CROUCH_AMOUNT = 2.0f;
+static constexpr float CROUCH_SMOOTH = 3.0f;
 #endif
 
 #ifdef BOB
 static float s_walk_speed;
 static constexpr float DUCK_MULTIPLY_SPEED = 0.5f;
 static constexpr float SPEED_THRESHOLD = 10.0f;
-static constexpr float MAXIMUM_WALK_SPEED = 400.0f;
 static constexpr float WALK_SMOOTH = 5.0f;
 
 static float s_bob[2];
@@ -117,29 +123,19 @@ static constexpr Vector BREATH_SPEED = {1.0f / 4.4f, 1.0f / 3.5f, 1.0f / 2.6f};
 #ifdef BOB
 static float sWalkSpeed(const struct ref_params_s* in)
 {
-	// Speed that player inputs in (keyboard/controller)
-	float speed = sqrtf((in->cmd->forwardmove * in->cmd->forwardmove) + (in->cmd->sidemove * in->cmd->sidemove));
+	float speed = sqrtf(in->simvel[0] * in->simvel[0] + in->simvel[1] * in->simvel[1]);
 
-	// Gordon Freeman actual physical speed, it may be because player
-	// input, because an explosion, a slope, friction, inertia, who knows
-	const float actual_vel = sqrtf(in->simvel[0] * in->simvel[0] + in->simvel[1] * in->simvel[1]);
-
-	// Do no count if in air, neither if Freeman speed is minimal,
-	// (player input is blind to Freeman being stuck)
-	if (in->onground == 0 || actual_vel < SPEED_THRESHOLD)
+	// Do no count if in air, neither if speed is minimal
+	if (in->onground == 0 || speed < SPEED_THRESHOLD)
 		speed = 0.0f;
 
-	// Crouching speed isn't accounted by engine (even if walk/sprint are)
-	if (in->cmd->buttons & IN_DUCK)
-		speed *= DUCK_MULTIPLY_SPEED; // We do it ourselves
-
 	// Normalize (0, 1), not perfect but will yield something close to 1
-	speed /= MAXIMUM_WALK_SPEED;
-	speed = Ic::Clamp(speed, 0.0f, 1.5f); // In case something went really wrong
+	speed /= in->movevars->maxspeed;
+	speed = Ic::Clamp(speed, 0.0f, 1.5f); // In case that something went wrong
 
 	// Smooth, all conditional above are hard ones
 	s_walk_speed = Ic::HolmerMix(speed, s_walk_speed, WALK_SMOOTH, in->frametime);
-	// gEngfuncs.Con_Printf("%f, %f\n", speed, s_walk_speed);
+	// gEngfuncs.Con_Printf("%f, %f, %f\n", speed, s_walk_speed, in->movevars->maxspeed);
 
 	return s_walk_speed;
 }
@@ -163,10 +159,8 @@ static void sNormalView(struct ref_params_s* in_out)
 	{
 		const float rough_z = in_out->vieworg[2];
 
-		if (in_out->onground != 0)
-			s_smooth_z = Ic::HolmerMix(rough_z, s_smooth_z, SMOOTH_Z_AMOUNT, dt);
-		else
-			s_smooth_z = Ic::HolmerMix(rough_z, s_smooth_z, SMOOTH_Z_AMOUNT_AIR, dt);
+		s_smooth_z =
+		    Ic::HolmerMix(rough_z, s_smooth_z, (in_out->onground != 0) ? SMOOTH_Z_AMOUNT : SMOOTH_Z_AMOUNT_AIR, dt);
 
 		// 30 is enough to jump and crouch without trigger the clamp
 		if (0 && (s_smooth_z < rough_z - 30.0f || s_smooth_z > rough_z + 30.0f))
@@ -213,16 +207,42 @@ static void sNormalView(struct ref_params_s* in_out)
 
 #ifdef LEAN
 		{
-			Vector temp;
-			VectorScale(in_out->simvel, 1.0f / MAXIMUM_WALK_SPEED, temp);
+			Vector forward;
+			Vector right;
+			Vector up;
 
-			s_lean[0] = Ic::HolmerMix(LEAN_AMOUNT[0] * DotProduct(in_out->forward, temp), s_lean[0], LEAN_SMOOTH, dt);
-			s_lean[1] = Ic::HolmerMix(LEAN_AMOUNT[1] * DotProduct(in_out->right, temp), s_lean[1], LEAN_SMOOTH, dt);
-			s_lean[2] = Ic::HolmerMix(LEAN_AMOUNT[2] * DotProduct(in_out->up, temp), s_lean[2], LEAN_SMOOTH, dt);
+			forward[0] = cosf(Ic::DegToRad(in_out->viewangles[1])); // AngleVectors() is terrible at 2d
+			forward[1] = sinf(Ic::DegToRad(in_out->viewangles[1])); // (and I don't remember how to use it)
+			forward[2] = 0.0f;
+
+			right[0] = cosf(Ic::DegToRad(in_out->viewangles[1] + 90.0f));
+			right[1] = sinf(Ic::DegToRad(in_out->viewangles[1] + 90.0f));
+			right[2] = 0.0f;
+
+			up[0] = 0.0f;
+			up[1] = 0.0f;
+			up[2] = 1.0f;
+
+			Vector temp;
+			VectorScale(in_out->simvel, 1.0f / in_out->movevars->maxspeed, temp);
+
+			s_lean[0] = Ic::HolmerMix(LEAN_AMOUNT[0] * DotProduct(forward, temp), s_lean[0], LEAN_SMOOTH, dt);
+			s_lean[1] = Ic::HolmerMix(LEAN_AMOUNT[1] * DotProduct(right, temp), s_lean[1], LEAN_SMOOTH, dt);
+			s_lean[2] = Ic::HolmerMix(LEAN_AMOUNT[2] * DotProduct(up, temp), s_lean[2], LEAN_SMOOTH, dt);
 
 			view_model->angles[0] -= (s_lean[0] > 0.0f) ? s_lean[0] : s_lean[0] / 2.0f; // Less when backwards
-			view_model->angles[2] += s_lean[1];
-			view_model->origin[2] -= Ic::Clamp(s_lean[2], -4.0f, 4.0f); // Please, don't go outside screen
+			view_model->angles[2] -= s_lean[1];
+
+			view_model->origin[2] -= Ic::Clamp(s_lean[2], -2.0f, 6.0f); // Follow line is a more game-ish alternative
+			// VectorMA(view_model->origin, Ic::Clamp(-s_lean[2], -2.0f, 6.0f), in_out->up, view_model->origin);
+		}
+#endif
+
+#ifdef CROUCH
+		{
+			const float crouch = (in_out->cmd->buttons & IN_DUCK) ? CROUCH_AMOUNT : 0.0f;
+			s_crouch = Ic::HolmerMix(crouch, s_crouch, CROUCH_SMOOTH, dt);
+			VectorMA(view_model->origin, s_crouch, in_out->up, view_model->origin);
 		}
 #endif
 
