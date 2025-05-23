@@ -21,6 +21,7 @@
 #include "Exports.h"
 
 #include "ic/view.hpp"
+#include "ic/fog.hpp"
 
 int CL_IsThirdPerson();
 void CL_CameraOffset(float* ofs);
@@ -1639,6 +1640,8 @@ void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 	{
 		return Ic::ViewUpdate(pparams);
 	}
+
+	Ic::FogDraw();
 
 	//	RecClCalcRefdef(pparams);
 

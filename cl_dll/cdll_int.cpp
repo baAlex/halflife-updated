@@ -40,6 +40,7 @@
 
 #include "ic/hud.hpp"
 #include "ic/messages.hpp"
+#include "ic/fog.hpp"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -173,6 +174,8 @@ int DLLEXPORT HUD_VidInit()
 {
 	//	RecClHudVidInit();
 	gHUD.VidInit(); // (baAlex) Disable it break things
+
+	Ic::FogVideoInitialise();
 
 	if (1)
 	{
