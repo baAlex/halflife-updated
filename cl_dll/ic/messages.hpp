@@ -23,6 +23,7 @@ void MessagesInitialise();
 
 int IsPlayerDead();
 int PlayerHealth();
+int PlayerMaxHealth();
 
 } // namespace Ic
 

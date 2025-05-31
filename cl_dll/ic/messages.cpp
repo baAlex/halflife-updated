@@ -71,3 +71,8 @@ int Ic::PlayerHealth()
 {
 	return s_health;
 }
+
+int Ic::PlayerMaxHealth()
+{
+	return 100; // TODO
+}
