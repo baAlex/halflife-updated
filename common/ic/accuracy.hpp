@@ -16,9 +16,30 @@ defined by the Mozilla Public License, v. 2.0.
 namespace Ic
 {
 
-void AccuracyInitialise();
-void AccuracySample(float x, float y, float z, float max_speed, double time); // Time in seconds
-float Accuracy();
+class Accuracy
+{
+  public:
+	void Initialise();
+	float Sample(float x, float y, float z, float max_speed, float time); // Time in seconds
+	float Get() const;
+
+  private:
+	struct Sample_
+	{
+		float x;
+		float y;
+		float z;
+		float time;
+	};
+
+	static const constexpr int SAMPLES_NO = 8; // TODO
+
+	Sample_ m_samples[SAMPLES_NO];
+	int m_cursor;
+	int m_total_samples;
+
+	float m_speed;
+};
 
 } // namespace Ic
 

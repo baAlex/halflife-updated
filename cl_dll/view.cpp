@@ -20,9 +20,6 @@
 #include "hltv.h"
 #include "Exports.h"
 
-#include "ic/view.hpp"
-#include "ic/accuracy.hpp"
-#include "ic/fog.hpp"
 
 int CL_IsThirdPerson();
 void CL_CameraOffset(float* ofs);
@@ -1249,7 +1246,7 @@ void V_GetChasePos(int target, float* cl_angles, float* origin, float* angles)
 {
 	if (1)
 	{
-		return Ic::ViewGetChasePosition(target, cl_angles, origin, angles);
+		// return Ic::ViewGetChasePosition(target, cl_angles, origin, angles); // TODO
 	}
 
 	cl_entity_t* ent = NULL;
@@ -1635,17 +1632,9 @@ void V_CalcSpectatorRefdef(struct ref_params_s* pparams)
 
 
 
+#if 0 // (baAlex)
 void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 {
-	if (1)
-	{
-		Ic::ViewUpdate(pparams);
-		Ic::AccuracySample(pparams->simorg[0], pparams->simorg[1], pparams->simorg[2], pparams->movevars->maxspeed, pparams->time);
-		return;
-	}
-
-	Ic::FogDraw();
-
 	//	RecClCalcRefdef(pparams);
 
 	// intermission / finale rendering
@@ -1681,6 +1670,7 @@ void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 #endif
 */
 }
+#endif
 
 /*
 =============
@@ -1709,7 +1699,7 @@ void V_PunchAxis(int axis, float punch)
 {
 	if (1)
 	{
-		return Ic::ViewApplyPunch(axis, punch);
+		// return Ic::ViewApplyPunch(axis, punch); // TODO
 	}
 
 	ev_punchangle[axis] = punch;
@@ -1720,13 +1710,9 @@ void V_PunchAxis(int axis, float punch)
 V_Init
 =============
 */
+#if 0 // (baAlex)
 void V_Init()
 {
-	if (1)
-	{
-		return Ic::ViewInitialise();
-	}
-
 	gEngfuncs.pfnAddCommand("centerview", V_StartPitchDrift);
 
 	scr_ofsx = gEngfuncs.pfnRegisterVariable("scr_ofsx", "0", 0);
@@ -1742,7 +1728,7 @@ void V_Init()
 	cl_waterdist = gEngfuncs.pfnRegisterVariable("cl_waterdist", "4", 0);
 	cl_chasedist = gEngfuncs.pfnRegisterVariable("cl_chasedist", "112", 0);
 }
-
+#endif
 
 //#define TRACE_TEST
 #if defined(TRACE_TEST)

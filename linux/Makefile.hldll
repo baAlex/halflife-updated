@@ -137,6 +137,7 @@ PUBLIC_OBJS = \
 	$(PUBLIC_OBJ_DIR)/interface.o \
 	
 COMMON_OBJS = \
+	$(COMMON_OBJ_DIR)/ic/accuracy.o \
 	$(COMMON_OBJ_DIR)/mathlib.o
 
 all: dirs hl.$(SHLIBEXT)
@@ -148,6 +149,7 @@ dirs:
 	-mkdir -p $(GAME_SHARED_OBJ_DIR)
 	-mkdir -p $(PUBLIC_OBJ_DIR)
 	-mkdir -p $(COMMON_OBJ_DIR)
+	-mkdir -p $(COMMON_OBJ_DIR)/ic
 
 hl.$(SHLIBEXT): $(HLDLL_OBJS) $(PM_OBJS) $(GAME_SHARED_OBJS) $(PUBLIC_OBJS) $(COMMON_OBJS)
 	$(CPLUS) $(LDFLAGS) $(SHLIBLDFLAGS) -o $(BUILD_DIR)/$@ $(HLDLL_OBJS) $(PM_OBJS) $(GAME_SHARED_OBJS) $(PUBLIC_OBJS) $(COMMON_OBJS) $(CPP_LIB)
@@ -166,6 +168,9 @@ $(PUBLIC_OBJ_DIR)/%.o : $(PUBLIC_SRC_DIR)/%.cpp
 	$(DO_CC)
 	
 $(COMMON_OBJ_DIR)/%.o : $(COMMON_SRC_DIR)/%.cpp
+	$(DO_CC)
+	
+$(COMMON_OBJ_DIR)/%.o : $(COMMON_SRC_DIR)/ic/%.cpp
 	$(DO_CC)
 
 clean:

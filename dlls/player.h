@@ -16,6 +16,7 @@
 #pragma once
 
 #include "pm_materials.h"
+#include "ic/accuracy.hpp"
 
 
 #define PLAYER_FATAL_FALL_SPEED 1024															  // approx 60 feet
@@ -356,6 +357,9 @@ public:
 
 	//True if the player is currently spawning.
 	bool m_bIsSpawning = false;
+
+	// (baAlex)
+	Ic::Accuracy m_accuracy;
 };
 
 inline void CBasePlayer::SetWeaponBit(int id)

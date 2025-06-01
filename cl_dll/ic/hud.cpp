@@ -206,7 +206,10 @@ class Crosshair
 		struct Rect rect;
 
 		// Accuracy() should be around 0,1
-		const int gap = MINIMUM_GAP + static_cast<int>(truncf(Ic::Accuracy() * 30.0f)); // TODO
+		const int gap = MINIMUM_GAP + static_cast<int>(truncf(Ic::PlayerAccuracy(Ic::Side::Client) * 30.0f)); // TODO
+
+		gEngfuncs.Con_Printf("Accuracy, client: %.2f, server: %.2f\n", Ic::PlayerAccuracy(Ic::Side::Client),
+		                     Ic::PlayerAccuracy(Ic::Side::Server));
 
 		gEngfuncs.pfnSPR_Set(m_horizontal, WHITE[0], WHITE[1], WHITE[2]);
 		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - PAD, &rect);

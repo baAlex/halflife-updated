@@ -21,6 +21,7 @@
 
 
 static int s_health;
+static float s_accuracy[2];
 
 
 static int sHealthChanges(const char* name, int size, void* pbuf)
@@ -59,6 +60,15 @@ void Ic::MessagesInitialise()
 
 	gEngfuncs.pfnHookUserMsg("Health", sHealthChanges);
 	// gEngfuncs.pfnHookUserMsg("Damage", sDamageReceive);
+
+	s_health = 0.0f;
+	s_accuracy[0] = 0.0f;
+	s_accuracy[1] = 0.0f;
+}
+
+void Ic::MessagesSetAccuracy(Side side, float a)
+{
+	s_accuracy[static_cast<int>(side)] = a;
 }
 
 
@@ -75,4 +85,9 @@ int Ic::PlayerHealth()
 int Ic::PlayerMaxHealth()
 {
 	return 100; // TODO
+}
+
+float Ic::PlayerAccuracy(Side side)
+{
+	return s_accuracy[static_cast<int>(side)];
 }

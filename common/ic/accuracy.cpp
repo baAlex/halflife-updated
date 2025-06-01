@@ -13,37 +13,20 @@ defined by the Mozilla Public License, v. 2.0.
 #include "accuracy.hpp"
 
 #include <math.h>
-#include "cl_dll.h"
+#include <string.h>
 
 
-struct Sample
+void Ic::Accuracy::Initialise()
 {
-	float x;
-	float y;
-	float z;
-	double time;
-};
+	memset(m_samples, 0, sizeof(Sample) * SAMPLES_NO);
+	m_cursor = 0;
+	m_total_samples = 0;
 
-constexpr int SAMPLES_NO = 8; // TODO
-
-static Sample s_samples[SAMPLES_NO];
-static Sample* s_cursor = s_samples;
-static double s_next_sampling;
-static float s_speed;
-
-
-void Ic::AccuracyInitialise()
-{
-	// gEngfuncs.Con_Printf("AccuracyInitialise()\n");
-
-	memset(s_samples, 0, sizeof(Sample) * SAMPLES_NO);
-	s_cursor = s_samples;
-	s_next_sampling = 0.0;
-	s_speed = 0.0f;
+	m_speed = 0.0f;
 }
 
 
-void Ic::AccuracySample(float x, float y, float z, float max_speed, double time)
+float Ic::Accuracy::Sample(float x, float y, float z, float max_speed, float time)
 {
 	// On the client, we are called directly by the engine, every frame:
 	//    Ic::AccuracySample <- V_CalcRefdef()
@@ -56,34 +39,32 @@ void Ic::AccuracySample(float x, float y, float z, float max_speed, double time)
 
 	// On the server, a TODO for now
 
-	if (time < s_next_sampling)
-		return;
-
 	// Add new sample
 	{
-		s_next_sampling = time + 1.0 / 30.0; // TODO
+		m_cursor = (m_cursor + 1 < SAMPLES_NO) ? m_cursor + 1 : 0;
 
-		s_cursor += 1;
-		if (s_cursor == s_samples + SAMPLES_NO)
-			s_cursor = s_samples;
-
-		s_cursor->x = x;
-		s_cursor->y = y;
-		s_cursor->z = z;
-		s_cursor->time = time;
+		m_samples[m_cursor].x = x;
+		m_samples[m_cursor].y = y;
+		m_samples[m_cursor].z = z;
+		m_samples[m_cursor].time = time;
 	}
+
+	// Do we have enough?
+	m_total_samples += 1;
+	if (m_total_samples < SAMPLES_NO) // Let's pray the branch prediction gods
+		return;
 
 	// Calculate speed
 	{
-		Sample* c = s_cursor;
+		const Sample_* c = m_samples + m_cursor;
 		double total_distance = 0.0;
 		double total_time = 0.0;
 
 		for (int i = 0; i < SAMPLES_NO - 1; i += 1)
 		{
-			Sample* p = c - 1;
-			if (p < s_samples)
-				p = s_samples + SAMPLES_NO - 1;
+			const Sample_* p = c - 1;
+			if (p < m_samples)
+				p = m_samples + SAMPLES_NO - 1;
 
 			const float dx = c->x - p->x;
 			const float dy = c->y - p->y;
@@ -96,12 +77,14 @@ void Ic::AccuracySample(float x, float y, float z, float max_speed, double time)
 			c = p;
 		}
 
-		s_speed = static_cast<float>(total_distance / total_time) / max_speed;
+		m_speed = static_cast<float>(total_distance / total_time) / max_speed;
 	}
+
+	return Get();
 }
 
-float Ic::Accuracy()
+
+float Ic::Accuracy::Get() const
 {
-	// gEngfuncs.Con_Printf("%f\n", s_speed);
-	return s_speed;
+	return m_speed;
 }

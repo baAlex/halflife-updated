@@ -19,11 +19,19 @@
 namespace Ic
 {
 
+enum class Side
+{
+	Client = 0,
+	Server = 1
+};
+
 void MessagesInitialise();
+void MessagesSetAccuracy(Side, float a);
 
 bool IsPlayerDead();
 int PlayerHealth();
 int PlayerMaxHealth();
+float PlayerAccuracy(Side);
 
 } // namespace Ic
 

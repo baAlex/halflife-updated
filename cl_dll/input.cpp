@@ -1017,7 +1017,7 @@ void InitInput()
 	// Initialize keyboard
 	KB_Init();
 	// Initialize view system
-	V_Init();
+	// V_Init(); // (baAlex) Moved outside, to "cdll_int.cpp"
 }
 
 /*

@@ -74,6 +74,14 @@ void DLLEXPORT HUD_TxferLocalOverrides(struct entity_state_s* state, const struc
 {
 	//	RecClTxferLocalOverrides(state, client);
 
+	{
+		// (baAlex)
+		// HUD_ProcessPlayerState(), seems to be executed second
+		// gEngfuncs.Con_Printf("HUD_TxferLocalOverrides: %f\n", client->vuser3.x);
+
+		state->vuser3.x = client->vuser3.x; // Playing along, just copy
+	}
+
 	VectorCopy(client->origin, state->origin);
 
 	// Spectator
@@ -98,6 +106,14 @@ playerstate structure
 void DLLEXPORT HUD_ProcessPlayerState(struct entity_state_s* dst, const struct entity_state_s* src)
 {
 	//	RecClProcessPlayerState(dst, src);
+
+	{
+		// (baAlex)
+		// HUD_ProcessPlayerState(), seems to be executed third
+		// gEngfuncs.Con_Printf("HUD_ProcessPlayerState: %f\n", src->vuser3.x);
+
+		dst->vuser3.x = src->vuser3.x; // Playing along, just copy
+	}
 
 	// Copy in network data
 	VectorCopy(src->origin, dst->origin);
@@ -167,6 +183,15 @@ Because we can predict an arbitrary number of frames before the server responds 
 void DLLEXPORT HUD_TxferPredictionData(struct entity_state_s* ps, const struct entity_state_s* pps, struct clientdata_s* pcd, const struct clientdata_s* ppcd, struct weapon_data_s* wd, const struct weapon_data_s* pwd)
 {
 	//	RecClTxferPredictionData(ps, pps, pcd, ppcd, wd, pwd);
+
+	{
+		// (baAlex)
+		// HUD_TxferPredictionData(), seems to be executed first
+		// gEngfuncs.Con_Printf("HUD_TxferPredictionData: %f\n", ppcd->vuser3.x);
+
+		// pcd->vuser3.x = ppcd->vuser3.x; // Playing along, just copy
+		// Nope, done below
+	}
 
 	ps->oldbuttons = pps->oldbuttons;
 	ps->flFallVelocity = pps->flFallVelocity;

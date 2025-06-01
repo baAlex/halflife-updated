@@ -2714,6 +2714,12 @@ void CBasePlayer::PostThink()
 
 	UpdatePlayerSound();
 
+	{
+		// (baAlex)
+		m_accuracy.Sample(pev->origin.x, pev->origin.y, pev->origin.z, 320.0f, gpGlobals->time);
+		// ALERT(at_notice, "%f\n", m_accuracy.Get());
+	}
+
 pt_end:
 #if defined(CLIENT_WEAPONS)
 	// Decay timers on weapons
@@ -3017,6 +3023,11 @@ void CBasePlayer::Spawn()
 	m_flNextChatTime = gpGlobals->time;
 
 	g_pGameRules->PlayerSpawn(this);
+
+	{
+		// (baAlex)
+		m_accuracy.Initialise();
+	}
 }
 
 

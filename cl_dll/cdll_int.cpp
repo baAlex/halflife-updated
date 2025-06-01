@@ -27,6 +27,7 @@
 //#include "vgui_schememanager.h"
 
 #include "pm_shared.h"
+#include "pm_defs.h"
 
 #include <string.h>
 #include "vgui_int.h"
@@ -42,6 +43,11 @@
 #include "ic/messages.hpp"
 #include "ic/accuracy.hpp"
 #include "ic/fog.hpp"
+#include "ic/view.hpp"
+
+
+static Ic::Accuracy s_client_side_accuracy;
+
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -113,6 +119,11 @@ void DLLEXPORT HUD_PlayerMove(struct playermove_s* ppmove, int server)
 	//	RecClClientMove(ppmove, server);
 
 	PM_Move(ppmove, server);
+
+	{
+		// (baAlex)
+		Ic::MessagesSetAccuracy(Ic::Side::Server, ppmove->vuser3.x / 256.0f);
+	}
 }
 
 static bool CL_InitClient()
@@ -175,23 +186,19 @@ int DLLEXPORT HUD_VidInit()
 {
 	//	RecClHudVidInit();
 	gHUD.VidInit(); // (baAlex) Disable it break things
-
-	Ic::FogVideoInitialise();
-
-	if (1)
-	{
-		Ic::HudVideoInitialise();
-	}
-
-	Ic::MessagesInitialise();
-	Ic::AccuracyInitialise();
-
-	if (1)
-	{
-		Ic::HudInitialise();
-	}
-
 	VGui_Startup();
+
+	{
+		// (baAlex)
+		Ic::FogVideoInitialise();
+		Ic::HudVideoInitialise();
+
+		Ic::MessagesInitialise();
+		Ic::HudInitialise();
+
+		Ic::ViewInitialise();
+		s_client_side_accuracy.Initialise();
+	}
 
 	return 1;
 }
@@ -213,17 +220,18 @@ void DLLEXPORT HUD_Init()
 	gHUD.Init(); // (baAlex) As above
 	Scheme_Init();
 
-	// HUD_Init() seems to be broken!
-	// https://github.com/ValveSoftware/halflife/issues/1857#issuecomment-361066866
-
-	// The fix is to use HUD_VidInit() which is indeed called at every new game
-
-	Ic::MessagesInitialise();
-	Ic::AccuracyInitialise();
-
-	if (1)
 	{
+		// (baAlex)
+		// HUD_Init() seems to be broken!
+		// https://github.com/ValveSoftware/halflife/issues/1857#issuecomment-361066866
+
+		// The fix is to use HUD_VidInit() which is indeed called at every new game
+
+		Ic::MessagesInitialise();
 		Ic::HudInitialise();
+		
+		Ic::ViewInitialise();
+		s_client_side_accuracy.Initialise();
 	}
 }
 
@@ -241,14 +249,12 @@ int DLLEXPORT HUD_Redraw(float time, int intermission)
 {
 	//	RecClHudRedraw(time, intermission);
 
-	// if (1) // (baAlex) TODO :)
+	// (baAlex) Is safe do disable this one (TODO)
+	gHUD.Redraw(time, 0 != intermission);
+
 	{
+		// (baAlex)
 		Ic::HudDraw(time);
-	}
-	// else
-	{
-		// (baAlex) Is safe do disable this one
-		gHUD.Redraw(time, 0 != intermission);
 	}
 
 	return 1;
@@ -295,8 +301,8 @@ void DLLEXPORT HUD_Reset()
 
 	gHUD.VidInit(); // (baAlex) You get the idea
 
-	if (1)
 	{
+		// (baAlex)
 		Ic::HudVideoInitialise();
 	}
 }
@@ -314,6 +320,26 @@ void DLLEXPORT HUD_Frame(double time)
 	//	RecClHudFrame(time);
 
 	GetClientVoiceMgr()->Frame(time);
+}
+
+
+/*
+==================
+V_CalcRefdef
+
+==================
+*/
+void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
+{
+	// (baAlex)
+	// Used to be in old "view.cpp", but now entire function is custom
+
+	s_client_side_accuracy.Sample(pparams->simorg[0], pparams->simorg[1], pparams->simorg[2],
+								  320.0f, pparams->time);
+	Ic::MessagesSetAccuracy(Ic::Side::Client, s_client_side_accuracy.Get());
+
+	Ic::ViewUpdate(pparams);
+	Ic::FogDraw();
 }
 
 
