@@ -21,7 +21,7 @@ namespace Ic
 
 void MessagesInitialise();
 
-int IsPlayerDead();
+bool IsPlayerDead();
 int PlayerHealth();
 int PlayerMaxHealth();
 

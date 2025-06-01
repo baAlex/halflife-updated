@@ -28,7 +28,7 @@ static int sHealthChanges(const char* name, int size, void* pbuf)
 	BEGIN_READ(pbuf, size);
 	s_health = READ_SHORT();
 
-	gEngfuncs.Con_Printf("Health changes: %i\n", s_health);
+	// gEngfuncs.Con_Printf("Health changes: %i\n", s_health);
 	return 1;
 }
 
@@ -62,9 +62,9 @@ void Ic::MessagesInitialise()
 }
 
 
-int Ic::IsPlayerDead()
+bool Ic::IsPlayerDead()
 {
-	return (s_health <= 0) ? 1 : 0;
+	return (s_health <= 0) ? true : false;
 }
 
 int Ic::PlayerHealth()
