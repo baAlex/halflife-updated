@@ -16,6 +16,7 @@
 #include "hud.hpp"
 #include "messages.hpp"
 #include "ic/base.hpp"
+#include "ic/accuracy.hpp"
 
 #include "cl_dll.h"
 #include "parsemsg.h"
@@ -47,7 +48,7 @@ class Health
 	int m_previous_health;
 
   public:
-	void Initialize()
+	void Initialise()
 	{
 		m_block = gEngfuncs.pfnSPR_Load("sprites/480-health-block.spr");
 		m_separator = gEngfuncs.pfnSPR_Load("sprites/480-health-separator.spr");
@@ -58,10 +59,10 @@ class Health
 		m_y = s_screen.iHeight - s_margin -
 		      Ic::Max(gEngfuncs.pfnSPR_Height(m_block, 0), gEngfuncs.pfnSPR_Height(m_separator, 0));
 
-		SoftInitialize();
+		SoftInitialise();
 	}
 
-	void SoftInitialize()
+	void SoftInitialise()
 	{
 		// We don't want these to be carried between matches, saved games or demos
 		m_highlight_time = 0;
@@ -179,38 +180,41 @@ class Crosshair
 	// seems to be using the TriangleApi, as is quite sharp and thin.
 
 	static constexpr int PAD = 2; // Is baked on the sprite, intended to avoid OpenGl bleeding
-	static constexpr int GAP = 9;
+	static constexpr int MINIMUM_GAP = 7;
 
 	HSPRITE m_horizontal;
 	HSPRITE m_vertical;
 
-	int h_w;
-	int v_h;
+	int m_h_w;
+	int m_v_h;
 
   public:
-	void Initialize()
+	void Initialise()
 	{
 		m_horizontal = gEngfuncs.pfnSPR_Load("sprites/480-crosshair-h.spr");
 		m_vertical = gEngfuncs.pfnSPR_Load("sprites/480-crosshair-v.spr");
 
-		h_w = gEngfuncs.pfnSPR_Width(m_horizontal, 0);
-		v_h = gEngfuncs.pfnSPR_Height(m_vertical, 0);
+		m_h_w = gEngfuncs.pfnSPR_Width(m_horizontal, 0);
+		m_v_h = gEngfuncs.pfnSPR_Height(m_vertical, 0);
 	}
 
-	void SoftInitialize() {}
+	void SoftInitialise() {}
 
 	void Draw(float time)
 	{
 		(void)time;
 		struct Rect rect;
 
+		// Accuracy() should be around 0,1
+		const int gap = MINIMUM_GAP + static_cast<int>(truncf(Ic::Accuracy() * 30.0f)); // TODO
+
 		gEngfuncs.pfnSPR_Set(m_horizontal, WHITE[0], WHITE[1], WHITE[2]);
-		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + GAP, s_screen.iHeight / 2 - PAD, &rect);
-		gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - GAP - h_w, s_screen.iHeight / 2 - PAD, &rect);
+		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - PAD, &rect);
+		gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, s_screen.iHeight / 2 - PAD, &rect);
 
 		gEngfuncs.pfnSPR_Set(m_vertical, WHITE[0], WHITE[1], WHITE[2]);
-		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + GAP, &rect);
-		gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - GAP - v_h, &rect);
+		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + gap, &rect);
+		gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - gap - m_v_h, &rect);
 	}
 };
 
@@ -232,8 +236,8 @@ void Ic::HudVideoInitialise()
 	s_screen.iSize = sizeof(SCREENINFO_s); // Silly versioning thing
 	gEngfuncs.pfnGetScreenInfo(&s_screen);
 
-	s_health.Initialize();
-	s_crosshair.Initialize();
+	s_health.Initialise();
+	s_crosshair.Initialise();
 }
 
 
@@ -245,8 +249,8 @@ void Ic::HudInitialise()
 	// As above:
 	//    Ic::HudInitialise() <- HUD_Init()
 
-	s_health.SoftInitialize();
-	s_crosshair.SoftInitialize();
+	s_health.SoftInitialise();
+	s_crosshair.SoftInitialise();
 }
 
 

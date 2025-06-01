@@ -21,6 +21,7 @@
 #include "Exports.h"
 
 #include "ic/view.hpp"
+#include "ic/accuracy.hpp"
 #include "ic/fog.hpp"
 
 int CL_IsThirdPerson();
@@ -1638,7 +1639,9 @@ void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 {
 	if (1)
 	{
-		return Ic::ViewUpdate(pparams);
+		Ic::ViewUpdate(pparams);
+		Ic::AccuracySample(pparams->simorg[0], pparams->simorg[1], pparams->simorg[2], pparams->movevars->maxspeed, pparams->time);
+		return;
 	}
 
 	Ic::FogDraw();

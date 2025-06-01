@@ -40,6 +40,7 @@
 
 #include "ic/hud.hpp"
 #include "ic/messages.hpp"
+#include "ic/accuracy.hpp"
 #include "ic/fog.hpp"
 
 cl_enginefunc_t gEngfuncs;
@@ -182,6 +183,14 @@ int DLLEXPORT HUD_VidInit()
 		Ic::HudVideoInitialise();
 	}
 
+	Ic::MessagesInitialise();
+	Ic::AccuracyInitialise();
+
+	if (1)
+	{
+		Ic::HudInitialise();
+	}
+
 	VGui_Startup();
 
 	return 1;
@@ -204,7 +213,13 @@ void DLLEXPORT HUD_Init()
 	gHUD.Init(); // (baAlex) As above
 	Scheme_Init();
 
+	// HUD_Init() seems to be broken!
+	// https://github.com/ValveSoftware/halflife/issues/1857#issuecomment-361066866
+
+	// The fix is to use HUD_VidInit() which is indeed called at every new game
+
 	Ic::MessagesInitialise();
+	Ic::AccuracyInitialise();
 
 	if (1)
 	{
