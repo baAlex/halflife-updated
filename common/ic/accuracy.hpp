@@ -20,25 +20,20 @@ class Accuracy
 {
   public:
 	void Initialise();
-	float Sample(float x, float y, float z, float max_speed, float time); // Time in seconds
+	float Sample(float origin_x, float origin_y, float angle_x, float angle_z, float max_speed, float dt);
 	float Get() const;
 
   private:
-	struct Sample_
-	{
-		float x;
-		float y;
-		float z;
-		float time;
-	};
+	bool m_set;
 
-	static const constexpr int SAMPLES_NO = 8; // TODO
+	float m_prev_origin_x;
+	float m_prev_origin_y;
+	float m_prev_angle_x;
+	float m_prev_angle_z;
 
-	Sample_ m_samples[SAMPLES_NO];
-	int m_cursor;
-	int m_total_samples;
-
-	float m_speed;
+	float m_walk_speed;
+	float m_look_speed;
+	float m_prev_look_speed;
 };
 
 } // namespace Ic

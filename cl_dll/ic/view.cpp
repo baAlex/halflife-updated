@@ -99,7 +99,7 @@ static constexpr float SMOOTH_Z_AMOUNT_AIR = 40.0f;
 
 #ifdef SWAY
 static float s_sway[2];
-static constexpr float SWAY_AMOUNT[2] = {1.75f * 7.0f, 1.75f * 5.0f}; // Slow to make it obvious that is on purpose
+static constexpr float SWAY_AMOUNT[2] = {1.0f * 7.0f, 1.0f * 5.0f}; // Slow to make it obvious that is on purpose
 static constexpr float SWAY_OUTSIDE_RANGE[2] = {30.0f, 40.0f};
 static constexpr float SWAY_INSIDE_RANGE[2] = {30.0f / 2.0f, 40.0f / 2.0f};
 #endif

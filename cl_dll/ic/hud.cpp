@@ -205,19 +205,37 @@ class Crosshair
 		(void)time;
 		struct Rect rect;
 
-		// Accuracy() should be around 0,1
-		const int gap = MINIMUM_GAP + static_cast<int>(truncf(Ic::PlayerAccuracy(Ic::Side::Client) * 30.0f)); // TODO
+		{
+			// Accuracy() should be around 0,1
+			const int gap =
+			    MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Client) * 60.0f)); // TODO
 
-		gEngfuncs.Con_Printf("Accuracy, client: %.2f, server: %.2f\n", Ic::PlayerAccuracy(Ic::Side::Client),
-		                     Ic::PlayerAccuracy(Ic::Side::Server));
+			// gEngfuncs.Con_Printf("Accuracy, client: %.2f, server: %.2f\n", Ic::PlayerAccuracy(Ic::Side::Client),
+			//                      Ic::PlayerAccuracy(Ic::Side::Server));
 
-		gEngfuncs.pfnSPR_Set(m_horizontal, WHITE[0], WHITE[1], WHITE[2]);
-		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - PAD, &rect);
-		gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, s_screen.iHeight / 2 - PAD, &rect);
+			gEngfuncs.pfnSPR_Set(m_horizontal, WHITE[0], WHITE[1], WHITE[2]);
+			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - PAD, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, s_screen.iHeight / 2 - PAD, &rect);
 
-		gEngfuncs.pfnSPR_Set(m_vertical, WHITE[0], WHITE[1], WHITE[2]);
-		gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + gap, &rect);
-		gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - gap - m_v_h, &rect);
+			gEngfuncs.pfnSPR_Set(m_vertical, WHITE[0], WHITE[1], WHITE[2]);
+			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + gap, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - gap - m_v_h, &rect);
+		}
+
+
+		if (1)
+		{
+			const int gap =
+			    MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Server) * 60.0f)); // TODO
+
+			gEngfuncs.pfnSPR_Set(m_horizontal, RED[0], RED[1], RED[2]);
+			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, 4 + s_screen.iHeight / 2 - PAD, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, 4 + s_screen.iHeight / 2 - PAD, &rect);
+
+			gEngfuncs.pfnSPR_Set(m_vertical, RED[0], RED[1], RED[2]);
+			gEngfuncs.pfnSPR_DrawHoles(0, 4 + s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + gap, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, 4 + s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - gap - m_v_h, &rect);
+		}
 	}
 };
 

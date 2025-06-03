@@ -11,6 +11,7 @@ defined by the Mozilla Public License, v. 2.0.
 */
 
 #include "accuracy.hpp"
+#include "base.hpp"
 
 #include <math.h>
 #include <string.h>
@@ -18,66 +19,62 @@ defined by the Mozilla Public License, v. 2.0.
 
 void Ic::Accuracy::Initialise()
 {
-	memset(m_samples, 0, sizeof(Sample) * SAMPLES_NO);
-	m_cursor = 0;
-	m_total_samples = 0;
+	m_set = false;
 
-	m_speed = 0.0f;
+	m_prev_origin_x = 0.0f;
+	m_prev_origin_y = 0.0f;
+	m_prev_angle_x = 0.0f;
+	m_prev_angle_z = 0.0f;
+
+	m_walk_speed = 0.0f;
+	m_look_speed = 0.0f;
+	m_prev_look_speed = 0.0f;
 }
 
 
-float Ic::Accuracy::Sample(float x, float y, float z, float max_speed, float time)
+static constexpr float WALK_SMOOTH = 10.0f;            // Origin has a quite low precision, we need to smooth it
+static constexpr float LOOK_SMOOTH[2] = {12.0f, 3.0f}; // Not here
+
+static constexpr float WALK_CONTRIBUTION = 1.0f;
+static constexpr float LOOK_CONTRIBUTION = 0.5f;
+
+
+float Ic::Accuracy::Sample(float origin_x, float origin_y, float angle_x, float angle_z, float max_speed, float dt)
 {
-	// On the client, we are called directly by the engine, every frame:
-	//    Ic::AccuracySample <- V_CalcRefdef()
-
-	// It has to be done there as it happens after client prediction, right before
-	// rendering. Other places that seems more sensical at glance like
-	// HUD_PlayerMove() where prediction happens, or HUD_ProcessPlayerState() that
-	// receives server data; have its own problems, first one doesn't run on demos,
-	// last one runs at a lower frequency.
-
-	// On the server, a TODO for now
-
-	// Add new sample
+	if (m_set == false)
 	{
-		m_cursor = (m_cursor + 1 < SAMPLES_NO) ? m_cursor + 1 : 0;
-
-		m_samples[m_cursor].x = x;
-		m_samples[m_cursor].y = y;
-		m_samples[m_cursor].z = z;
-		m_samples[m_cursor].time = time;
+		m_prev_origin_x = origin_x;
+		m_prev_origin_y = origin_y;
+		m_prev_angle_x = angle_x;
+		m_prev_angle_z = angle_z;
+		m_set = true;
+		return 0.0f;
 	}
 
-	// Do we have enough?
-	m_total_samples += 1;
-	if (m_total_samples < SAMPLES_NO) // Let's pray the branch prediction gods
-		return;
+	if (dt <= 0.001f) // Things happen
+		return 0.0f;
 
-	// Calculate speed
+	// Walk
 	{
-		const Sample_* c = m_samples + m_cursor;
-		double total_distance = 0.0;
-		double total_time = 0.0;
+		const float dx = (origin_x - m_prev_origin_x) / (dt / WALK_CONTRIBUTION); // We want deltas in game units
+		const float dy = (origin_y - m_prev_origin_y) / (dt / WALK_CONTRIBUTION);
+		m_prev_origin_x = origin_x;
+		m_prev_origin_y = origin_y;
 
-		for (int i = 0; i < SAMPLES_NO - 1; i += 1)
-		{
-			const Sample_* p = c - 1;
-			if (p < m_samples)
-				p = m_samples + SAMPLES_NO - 1;
+		m_walk_speed = Ic::HolmerMix(sqrtf(dx * dx + dy * dy) / max_speed, m_walk_speed, WALK_SMOOTH, dt);
+	}
 
-			const float dx = c->x - p->x;
-			const float dy = c->y - p->y;
-			const float dz = c->z - p->z;
-			const double dt = c->time - p->time;
+	// Look
+	{
+		const float dx = Ic::AnglesDifference(angle_x, m_prev_angle_x) / dt;
+		const float dz = Ic::AnglesDifference(angle_z, m_prev_angle_z) / dt;
+		m_prev_angle_x = angle_x;
+		m_prev_angle_z = angle_z;
 
-			total_distance += sqrtf(dx * dx + dy * dy + dz * dz);
-			total_time += dt;
-
-			c = p;
-		}
-
-		m_speed = static_cast<float>(total_distance / total_time) / max_speed;
+		const float speed = sqrtf(dx * dx + dz * dz) / (360.0f / LOOK_CONTRIBUTION);
+		m_look_speed =
+		    Ic::AnglesHolmerMix(speed, m_look_speed, (speed > m_prev_look_speed) ? LOOK_SMOOTH[0] : LOOK_SMOOTH[1], dt);
+		m_prev_look_speed = m_look_speed;
 	}
 
 	return Get();
@@ -86,5 +83,5 @@ float Ic::Accuracy::Sample(float x, float y, float z, float max_speed, float tim
 
 float Ic::Accuracy::Get() const
 {
-	return m_speed;
+	return m_walk_speed + m_look_speed;
 }

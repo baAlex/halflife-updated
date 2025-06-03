@@ -138,6 +138,7 @@ PUBLIC_OBJS = \
 	
 COMMON_OBJS = \
 	$(COMMON_OBJ_DIR)/ic/accuracy.o \
+	$(COMMON_OBJ_DIR)/ic/base.o \
 	$(COMMON_OBJ_DIR)/mathlib.o
 
 all: dirs hl.$(SHLIBEXT)

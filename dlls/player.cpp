@@ -2716,7 +2716,7 @@ void CBasePlayer::PostThink()
 
 	{
 		// (baAlex)
-		m_accuracy.Sample(pev->origin.x, pev->origin.y, pev->origin.z, 320.0f, gpGlobals->time);
+		m_accuracy.Sample(pev->origin.x, pev->origin.y, pev->v_angle.x, pev->v_angle.y, 320.0f, gpGlobals->frametime);
 		// ALERT(at_notice, "%f\n", m_accuracy.Get());
 	}
 
