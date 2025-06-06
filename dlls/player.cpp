@@ -2716,7 +2716,12 @@ void CBasePlayer::PostThink()
 
 	{
 		// (baAlex)
-		m_accuracy.Sample({pev->origin.x, pev->origin.y}, {pev->v_angle.x, pev->v_angle.y}, 320.0f, gpGlobals->frametime);
+		//m_accuracy.Sample({pev->origin.x, pev->origin.y}, {pev->v_angle.x, pev->v_angle.y},
+		//                  ((pev->flags & FL_DUCKING) != 0) ? 1 : 0, ((pev->flags & FL_ONGROUND) != 0) ? 0 : 1,
+		//                  320.0f, gpGlobals->frametime);
+		m_accuracy.Sample({pev->origin.x, pev->origin.y}, {pev->v_angle.x, pev->v_angle.y},
+		                  ((pev->button & IN_DUCK) != 0) ? 1 : 0, ((pev->flags & FL_ONGROUND) != 0) ? 0 : 1,
+		                  320.0f, gpGlobals->frametime);
 		// ALERT(at_notice, "%f\n", m_accuracy.Get());
 	}
 

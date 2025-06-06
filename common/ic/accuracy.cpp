@@ -27,18 +27,31 @@ void Ic::Accuracy::Initialise()
 	m_walk_speed = 0.0f;
 	m_look_speed = 0.0f;
 	m_prev_look_speed = 0.0f;
+
+	m_air = 0.0f;
+	m_crouch = 0.0f;
 }
 
 
-static constexpr float WALK_SMOOTH = 10.0f;            // Origin has a quite low precision, we need to smooth it
+static constexpr float WALK_SMOOTH = 15.0f;            // Origin has a quite low precision, we need to smooth it
 static constexpr float LOOK_SMOOTH[2] = {12.0f, 3.0f}; // Not here
+static constexpr float AIR_SMOOTH = 7.0f;
+static constexpr float CROUCH_SMOOTH = 3.0f;
 
-static constexpr float WALK_CONTRIBUTION = 1.0f;
+static constexpr float WALK_CONTRIBUTION = 0.5f;
 static constexpr float LOOK_CONTRIBUTION = 0.5f;
+static constexpr float AIR_CONTRIBUTION = 0.25f;
+static constexpr float CROUCH_MAX = 0.2f;
+static constexpr float CROUCH_MIN = 0.1f;
+
+static constexpr float NORMALISE = 1.0f / (WALK_CONTRIBUTION + LOOK_CONTRIBUTION + AIR_CONTRIBUTION + CROUCH_MAX);
 
 
-float Ic::Accuracy::Sample(Ic::Vector2 origin, Ic::Vector2 angles, float max_speed, float dt)
+float Ic::Accuracy::Sample(Ic::Vector2 origin, Ic::Vector2 angles, int crouch, int on_air, float max_speed, float dt)
 {
+	const float air_float = Ic::Clamp(static_cast<float>(on_air), 0.0f, AIR_CONTRIBUTION);
+	const float crouch_float = CROUCH_MAX - Ic::Clamp(static_cast<float>(crouch), 0.0f, CROUCH_MIN);
+
 	if (m_set == false)
 	{
 		m_set = true;
@@ -49,6 +62,9 @@ float Ic::Accuracy::Sample(Ic::Vector2 origin, Ic::Vector2 angles, float max_spe
 		m_walk_speed = 0.0f;
 		m_look_speed = 0.0f;
 		m_prev_look_speed = 0.0f;
+
+		m_air = air_float;
+		m_crouch = crouch_float;
 
 		return 0.0f;
 	}
@@ -77,11 +93,18 @@ float Ic::Accuracy::Sample(Ic::Vector2 origin, Ic::Vector2 angles, float max_spe
 		m_prev_look_speed = m_look_speed;
 	}
 
+	// The others
+	{
+		m_air = Ic::AnglesHolmerMix(air_float, m_air, AIR_SMOOTH, dt);
+		m_crouch = Ic::AnglesHolmerMix(crouch_float, m_crouch, CROUCH_SMOOTH, dt);
+	}
+
+
 	return Get();
 }
 
 
 float Ic::Accuracy::Get() const
 {
-	return m_walk_speed + m_look_speed;
+	return (m_crouch + m_air + m_look_speed + m_walk_speed) * NORMALISE;
 }

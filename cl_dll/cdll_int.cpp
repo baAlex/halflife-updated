@@ -341,6 +341,7 @@ void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 
 	s_client_side_accuracy.Sample({pparams->simorg[0], pparams->simorg[1]},
 	                              {pparams->cl_viewangles[0], pparams->cl_viewangles[1]},
+	                              pparams->cmd->buttons & IN_DUCK, (pparams->onground == 0) ? 1 : 0,
 	                              320.0f, pparams->frametime);
 	Ic::MessagesSetAccuracy(Ic::Side::Client, s_client_side_accuracy.Get());
 

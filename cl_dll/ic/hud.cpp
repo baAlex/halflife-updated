@@ -213,8 +213,8 @@ class Crosshair
 
 	static constexpr int OFFSET = 1;
 
-	static constexpr int MINIMUM_GAP = 7;
-	static constexpr float AMPLITUDE = 60.0f;
+	static constexpr int MINIMUM_GAP = 2;
+	static constexpr float AMPLITUDE = 90.0f;
 
 	HSPRITE m_horizontal;
 	HSPRITE m_vertical;
@@ -241,7 +241,7 @@ class Crosshair
 
 		{
 			// Accuracy should be around 0,1
-			const int gap = MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Client) * AMPLITUDE));
+			const int gap = MINIMUM_GAP + static_cast<int>(roundf(Ic::PlayerAccuracy(Ic::Side::Client) * AMPLITUDE));
 
 			gEngfuncs.pfnSPR_Set(m_horizontal, WHITE[0], WHITE[1], WHITE[2]);
 			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - OFFSET, &rect);
@@ -254,7 +254,7 @@ class Crosshair
 
 		if (s_developer_level > 1)
 		{
-			const int gap = MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Server) * AMPLITUDE));
+			const int gap = MINIMUM_GAP + static_cast<int>(roundf(Ic::PlayerAccuracy(Ic::Side::Server) * AMPLITUDE));
 
 			gEngfuncs.pfnSPR_Set(m_horizontal, RED[0], RED[1], RED[2]);
 			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, 4 + s_screen.iHeight / 2 - OFFSET, &rect);
