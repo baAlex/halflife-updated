@@ -339,8 +339,8 @@ void DLLEXPORT V_CalcRefdef(struct ref_params_s* pparams)
 	// (baAlex)
 	// Used to be in old "view.cpp", but now entire function is custom
 
-	s_client_side_accuracy.Sample(pparams->simorg[0], pparams->simorg[1],
-	                              pparams->cl_viewangles[0], pparams->cl_viewangles[1],
+	s_client_side_accuracy.Sample({pparams->simorg[0], pparams->simorg[1]},
+	                              {pparams->cl_viewangles[0], pparams->cl_viewangles[1]},
 	                              320.0f, pparams->frametime);
 	Ic::MessagesSetAccuracy(Ic::Side::Client, s_client_side_accuracy.Get());
 

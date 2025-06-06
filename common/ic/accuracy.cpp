@@ -21,10 +21,8 @@ void Ic::Accuracy::Initialise()
 {
 	m_set = false;
 
-	m_prev_origin_x = 0.0f;
-	m_prev_origin_y = 0.0f;
-	m_prev_angle_x = 0.0f;
-	m_prev_angle_z = 0.0f;
+	m_prev_origin = {};
+	m_prev_angles = {};
 
 	m_walk_speed = 0.0f;
 	m_look_speed = 0.0f;
@@ -39,16 +37,14 @@ static constexpr float WALK_CONTRIBUTION = 1.0f;
 static constexpr float LOOK_CONTRIBUTION = 0.5f;
 
 
-float Ic::Accuracy::Sample(float origin_x, float origin_y, float angle_x, float angle_z, float max_speed, float dt)
+float Ic::Accuracy::Sample(Ic::Vector2 origin, Ic::Vector2 angles, float max_speed, float dt)
 {
 	if (m_set == false)
 	{
 		m_set = true;
 
-		m_prev_origin_x = origin_x;
-		m_prev_origin_y = origin_y;
-		m_prev_angle_x = angle_x;
-		m_prev_angle_z = angle_z;
+		m_prev_origin = origin;
+		m_prev_angles = angles;
 
 		m_walk_speed = 0.0f;
 		m_look_speed = 0.0f;
@@ -62,20 +58,18 @@ float Ic::Accuracy::Sample(float origin_x, float origin_y, float angle_x, float 
 
 	// Walk
 	{
-		const float dx = (origin_x - m_prev_origin_x) / (dt / WALK_CONTRIBUTION); // We want deltas in game units
-		const float dy = (origin_y - m_prev_origin_y) / (dt / WALK_CONTRIBUTION);
-		m_prev_origin_x = origin_x;
-		m_prev_origin_y = origin_y;
+		const Ic::Vector2 delta =
+		    Scale(Subtract(origin, m_prev_origin), 1.0f / (dt / WALK_CONTRIBUTION)); // We want deltas in game units
+		m_prev_origin = origin;
 
-		m_walk_speed = Ic::HolmerMix(sqrtf(dx * dx + dy * dy) / max_speed, m_walk_speed, WALK_SMOOTH, dt);
+		m_walk_speed = Ic::HolmerMix(Length(delta) / max_speed, m_walk_speed, WALK_SMOOTH, dt);
 	}
 
 	// Look
 	{
-		const float dx = Ic::AnglesDifference(angle_x, m_prev_angle_x) / dt;
-		const float dz = Ic::AnglesDifference(angle_z, m_prev_angle_z) / dt;
-		m_prev_angle_x = angle_x;
-		m_prev_angle_z = angle_z;
+		const float dx = Ic::AnglesDifference(angles[0], m_prev_angles[0]) / dt;
+		const float dz = Ic::AnglesDifference(angles[1], m_prev_angles[1]) / dt;
+		m_prev_angles = angles;
 
 		const float speed = sqrtf(dx * dx + dz * dz) / (360.0f / LOOK_CONTRIBUTION);
 		m_look_speed =

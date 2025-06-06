@@ -13,6 +13,8 @@ defined by the Mozilla Public License, v. 2.0.
 #ifndef IC_ACCURACY_HPP
 #define IC_ACCURACY_HPP
 
+#include "ic/vector.hpp"
+
 namespace Ic
 {
 
@@ -20,16 +22,14 @@ class Accuracy
 {
   public:
 	void Initialise();
-	float Sample(float origin_x, float origin_y, float angle_x, float angle_z, float max_speed, float dt);
+	float Sample(Ic::Vector2 xy_origin, Ic::Vector2 xz_angles, float max_speed, float dt);
 	float Get() const;
 
   private:
 	bool m_set;
 
-	float m_prev_origin_x;
-	float m_prev_origin_y;
-	float m_prev_angle_x;
-	float m_prev_angle_z;
+	Ic::Vector2 m_prev_origin;
+	Ic::Vector2 m_prev_angles;
 
 	float m_walk_speed;
 	float m_look_speed;

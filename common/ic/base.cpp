@@ -13,6 +13,7 @@ defined by the Mozilla Public License, v. 2.0.
 #include "base.hpp"
 #include <math.h>
 
+
 float Ic::DegToRad(float deg)
 {
 	return deg * (static_cast<float>(M_PI) / 180.0f);
@@ -23,25 +24,6 @@ float Ic::RadToDeg(float rad)
 	return rad * (180.0f / static_cast<float>(M_PI));
 }
 
-float Ic::Min(float a, float b)
-{
-	return (a < b) ? a : b;
-}
-
-float Ic::Max(float a, float b)
-{
-	return (a > b) ? a : b;
-}
-
-float Ic::Clamp(float x, float min, float max)
-{
-	return Min(Max(x, min), max);
-}
-
-float Ic::Mix(float a, float b, float f)
-{
-	return a + (b - a) * f;
-}
 
 float Ic::FmodFloored(float x, float y)
 {
@@ -53,14 +35,15 @@ float Ic::AnglesDifference(float a, float b)
 	return FmodFloored(b - a + 180.0f, 360.0f) - 180.0f;
 }
 
+
+float Ic::Mix(float a, float b, float f)
+{
+	return a + (b - a) * f;
+}
+
 float Ic::AnglesMix(float a, float b, float f)
 {
 	return a + AnglesDifference(a, b) * f;
-}
-
-float Ic::AnglesHolmerMix(float a, float b, float d, float dt)
-{
-	return AnglesMix(a, b, static_cast<float>(expf(-d * dt)));
 }
 
 float Ic::HolmerMix(float a, float b, float d, float dt)
@@ -69,6 +52,12 @@ float Ic::HolmerMix(float a, float b, float d, float dt)
 	// https://www.youtube.com/watch?v=LSNQuFEDOyQ
 	return Mix(a, b, static_cast<float>(expf(-d * dt)));
 }
+
+float Ic::AnglesHolmerMix(float a, float b, float d, float dt)
+{
+	return AnglesMix(a, b, static_cast<float>(expf(-d * dt)));
+}
+
 
 float Ic::ClampAroundCentre(float x, float centre, float range)
 {

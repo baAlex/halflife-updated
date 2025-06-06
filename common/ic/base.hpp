@@ -16,17 +16,24 @@ defined by the Mozilla Public License, v. 2.0.
 namespace Ic
 {
 
+// clang-format off
+template <typename T> T Min(T a, T b) { return (a < b) ? a : b; }
+template <typename T> T Max(T a, T b) { return (a > b) ? a : b; }
+template <typename T> T Clamp(T x, T min, T max) { return Min(Max(x, min), max); }
+template <typename T> T Abs(T v) { return Max(v, -v); }
+// clang-format on
+
 float DegToRad(float deg);
 float RadToDeg(float rad);
-float Min(float a, float b);
-float Max(float a, float b);
-float Clamp(float x, float min, float max);
-float Mix(float a, float b, float f);
+
 float FmodFloored(float x, float y);
 float AnglesDifference(float a, float b);
+
+float Mix(float a, float b, float f);
 float AnglesMix(float a, float b, float f);
-float AnglesHolmerMix(float a, float b, float d, float dt);
 float HolmerMix(float a, float b, float d, float dt);
+float AnglesHolmerMix(float a, float b, float d, float dt);
+
 float ClampAroundCentre(float x, float centre, float range);
 
 } // namespace Ic
