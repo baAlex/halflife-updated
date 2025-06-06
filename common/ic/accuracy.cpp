@@ -43,11 +43,17 @@ float Ic::Accuracy::Sample(float origin_x, float origin_y, float angle_x, float 
 {
 	if (m_set == false)
 	{
+		m_set = true;
+
 		m_prev_origin_x = origin_x;
 		m_prev_origin_y = origin_y;
 		m_prev_angle_x = angle_x;
 		m_prev_angle_z = angle_z;
-		m_set = true;
+
+		m_walk_speed = 0.0f;
+		m_look_speed = 0.0f;
+		m_prev_look_speed = 0.0f;
+
 		return 0.0f;
 	}
 

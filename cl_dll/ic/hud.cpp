@@ -22,12 +22,44 @@
 #include "parsemsg.h"
 
 
+static constexpr int LIGHT_GREY[3] = {235, 235, 235};
 static constexpr int WHITE[3] = {255, 255, 255};
-static constexpr int GREY[3] = {92, 92, 92};
+static constexpr int GREY[3] = {50, 50, 50};
 static constexpr int RED[3] = {200, 0, 0};
 
 static SCREENINFO_s s_screen;
-static int s_margin = 15;
+static int s_margin = 15; // TODO, should change according resolution
+static int s_developer_level = 0;
+
+
+static int sFontHeight(HSPRITE font)
+{
+	// Less one as fonts have am extra pixel to combat bleeding
+	return gEngfuncs.pfnSPR_Height(font, static_cast<int>('\n')) - 1;
+}
+
+static void sDrawText(int x, int y, HSPRITE font, int r, int g, int b, const char* text)
+{
+	struct Rect rect;
+	int x2 = x;
+
+	gEngfuncs.pfnSPR_Set(font, r, g, b);
+
+	for (const char* c = text; *c != 0x00; c += 1)
+	{
+		const int frame = static_cast<int>(*c);
+
+		if (*c == '\n')
+		{
+			x2 = x;
+			y += gEngfuncs.pfnSPR_Height(font, frame) - 1; // Less one as fonts have am extra pixel to combat bleeding
+			continue;
+		}
+
+		gEngfuncs.pfnSPR_DrawHoles(frame, x2, y, &rect);
+		x2 += gEngfuncs.pfnSPR_Width(font, frame) - 1; // Less one as fonts have am extra pixel to combat bleeding
+	}
+}
 
 
 class Health
@@ -87,7 +119,7 @@ class Health
 
 			// Full health
 			if (Ic::PlayerHealth() >= CRITICAL_THRESHOLD)
-				gEngfuncs.pfnSPR_Set(m_block, WHITE[0], WHITE[1], WHITE[2]);
+				gEngfuncs.pfnSPR_Set(m_block, LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
 			else
 				gEngfuncs.pfnSPR_Set(m_block, RED[0], RED[1], RED[2]);
 
@@ -136,7 +168,7 @@ class Health
 
 			// Full health
 			if (Ic::PlayerHealth() >= CRITICAL_THRESHOLD)
-				gEngfuncs.pfnSPR_Set(m_separator, WHITE[0], WHITE[1], WHITE[2]);
+				gEngfuncs.pfnSPR_Set(m_separator, LIGHT_GREY[0], LIGHT_GREY[1], LIGHT_GREY[2]);
 			else
 				gEngfuncs.pfnSPR_Set(m_separator, RED[0], RED[1], RED[2]);
 
@@ -179,8 +211,10 @@ class Crosshair
 	// on of Day of Defeat (including bleeding, blur). The one in Counter Strike tho,
 	// seems to be using the TriangleApi, as is quite sharp and thin.
 
-	static constexpr int PAD = 2; // Is baked on the sprite, intended to avoid OpenGl bleeding
+	static constexpr int OFFSET = 1;
+
 	static constexpr int MINIMUM_GAP = 7;
+	static constexpr float AMPLITUDE = 60.0f;
 
 	HSPRITE m_horizontal;
 	HSPRITE m_vertical;
@@ -206,35 +240,64 @@ class Crosshair
 		struct Rect rect;
 
 		{
-			// Accuracy() should be around 0,1
-			const int gap =
-			    MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Client) * 60.0f)); // TODO
-
-			// gEngfuncs.Con_Printf("Accuracy, client: %.2f, server: %.2f\n", Ic::PlayerAccuracy(Ic::Side::Client),
-			//                      Ic::PlayerAccuracy(Ic::Side::Server));
+			// Accuracy should be around 0,1
+			const int gap = MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Client) * AMPLITUDE));
 
 			gEngfuncs.pfnSPR_Set(m_horizontal, WHITE[0], WHITE[1], WHITE[2]);
-			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - PAD, &rect);
-			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, s_screen.iHeight / 2 - PAD, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, s_screen.iHeight / 2 - OFFSET, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, s_screen.iHeight / 2 - OFFSET, &rect);
 
 			gEngfuncs.pfnSPR_Set(m_vertical, WHITE[0], WHITE[1], WHITE[2]);
-			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + gap, &rect);
-			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - gap - m_v_h, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 - OFFSET, s_screen.iHeight / 2 + gap, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - OFFSET, s_screen.iHeight / 2 - gap - m_v_h, &rect);
 		}
 
-
-		if (1)
+		if (s_developer_level > 1)
 		{
-			const int gap =
-			    MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Server) * 60.0f)); // TODO
+			const int gap = MINIMUM_GAP + static_cast<int>(ceilf(Ic::PlayerAccuracy(Ic::Side::Server) * AMPLITUDE));
 
 			gEngfuncs.pfnSPR_Set(m_horizontal, RED[0], RED[1], RED[2]);
-			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, 4 + s_screen.iHeight / 2 - PAD, &rect);
-			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, 4 + s_screen.iHeight / 2 - PAD, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(0, s_screen.iWidth / 2 + gap, 4 + s_screen.iHeight / 2 - OFFSET, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, s_screen.iWidth / 2 - gap - m_h_w, -4 + s_screen.iHeight / 2 - OFFSET, &rect);
 
 			gEngfuncs.pfnSPR_Set(m_vertical, RED[0], RED[1], RED[2]);
-			gEngfuncs.pfnSPR_DrawHoles(0, 4 + s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 + gap, &rect);
-			gEngfuncs.pfnSPR_DrawHoles(1, 4 + s_screen.iWidth / 2 - PAD, s_screen.iHeight / 2 - gap - m_v_h, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(0, -4 + s_screen.iWidth / 2 - OFFSET, s_screen.iHeight / 2 + gap, &rect);
+			gEngfuncs.pfnSPR_DrawHoles(1, 4 + s_screen.iWidth / 2 - OFFSET, s_screen.iHeight / 2 - gap - m_v_h, &rect);
+		}
+	}
+};
+
+
+class DevDashboard
+{
+	HSPRITE m_dev_font;
+
+	static constexpr size_t TEXT_BUFFER_LENGTH = 256;
+	char m_text_buffer[TEXT_BUFFER_LENGTH];
+
+  public:
+	void Initialise()
+	{
+		m_dev_font = gEngfuncs.pfnSPR_Load("sprites/480-font-dev.spr");
+	}
+
+	void SoftInitialise() {}
+
+	void Draw(float time)
+	{
+		(void)time;
+		struct Rect rect;
+
+		if (s_developer_level > 0)
+		{
+			const int height = sFontHeight(m_dev_font);
+
+			snprintf(m_text_buffer, TEXT_BUFFER_LENGTH, "Health: %i", Ic::PlayerHealth());
+			sDrawText(s_margin, 100 + height * 0, m_dev_font, WHITE[0], WHITE[1], WHITE[2], m_text_buffer);
+
+			snprintf(m_text_buffer, TEXT_BUFFER_LENGTH, "Client accuracy: %.2f\nServer accuracy: %.2f",
+			         Ic::PlayerAccuracy(Ic::Side::Client), Ic::PlayerAccuracy(Ic::Side::Server));
+			sDrawText(s_margin, 100 + height * 2, m_dev_font, WHITE[0], WHITE[1], WHITE[2], m_text_buffer);
 		}
 	}
 };
@@ -242,6 +305,7 @@ class Crosshair
 
 static Health s_health;
 static Crosshair s_crosshair;
+static DevDashboard s_dev_dashboard;
 
 
 void Ic::HudVideoInitialise()
@@ -259,6 +323,7 @@ void Ic::HudVideoInitialise()
 
 	s_health.Initialise();
 	s_crosshair.Initialise();
+	s_dev_dashboard.Initialise();
 }
 
 
@@ -270,8 +335,11 @@ void Ic::HudInitialise()
 	// As above:
 	//    Ic::HudInitialise() <- HUD_Init()
 
+	gEngfuncs.pfnAddCommand("dev_dashboard", []() { s_developer_level = (s_developer_level + 1) % 3; });
+
 	s_health.SoftInitialise();
 	s_crosshair.SoftInitialise();
+	s_dev_dashboard.SoftInitialise();
 }
 
 
@@ -282,6 +350,8 @@ void Ic::HudDraw(float time)
 
 	// As above:
 	//    Ic::HudDraw() <- HUD_Redraw()
+
+	s_dev_dashboard.Draw(time);
 
 	if (Ic::IsPlayerDead() == true)
 		return;

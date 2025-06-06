@@ -299,11 +299,16 @@ void DLLEXPORT HUD_Reset()
 {
 	//	RecClHudReset();
 
-	gHUD.VidInit(); // (baAlex) You get the idea
+	gHUD.VidInit();
 
 	{
 		// (baAlex)
+		// We are not being called :/, with this demos are broken basically...
+		// at least from a client-only perspective, maybe the server can handle them
+		gEngfuncs.Con_Printf("#### HUD_Reset() ####\n");
+
 		Ic::HudVideoInitialise();
+		s_client_side_accuracy.Initialise();
 	}
 }
 
